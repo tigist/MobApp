@@ -1,4 +1,7 @@
 <h2> Android mobile application</h2>
-* Dirictory MobApp is an android project
 
-* Dirictory MobAppAgent is an app engine project
+
+* Dir MobApp is an android project file that enable android phone to access web applciation using PhoneGap.
+* Dir MobAppAgent is web application that run on the android. It is web application running app engine.
+
+
