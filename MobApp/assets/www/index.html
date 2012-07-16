@@ -1,0 +1,87 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>BRIDGE Mob agent demo 1</title>
+<!-- <script type="text/javascript" charset="utf-8" src="cordova-1.8.0.js"></script> -->
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.rest.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/Js-file.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.json-2.3.min.js"></script>
+</head>
+<body >
+<script type="text/javascript" charset="utf-8">  
+
+testCall= function(){
+	//url = "http://memo-app-services.appspot.com/bridge-state/";
+	url = "http://memo-app-services.appspot.com/agent/1ef00f60-caa1-11e1-ad50-00007f000001";
+	data ={};
+	$.Read(url,data,{
+	url:url,
+    xhrFields:{
+          withCredentials:true  //not to be catched by the browser and add timestamp parm
+    },
+    contentType: "application/json",
+    encoding: "charset=utf-8",
+    dataType: "json",
+    cache:false,
+    success:function(res){
+        console.log(res);
+    	alert(JSON.stringify(res));
+    	alert("agent : " + res.name + " say hi hi");
+        console.log(res.uuid);        //res contains the json object*/
+		},
+   complete:function(res){
+         if (res.readyState == 0 && res.status==0){
+                console.log("Generic error, CORS headers not set?");
+           }
+   		 }
+	});
+	alert("RESTFull API excuted");
+}
+
+//========================================================================
+//
+ajaxGetData = function(){
+	  $.ajax({
+	    type: "GET",
+	    url: "http://memo-app-services.appspot.com/agent/1ef00f60-caa1-11e1-ad50-00007f000001",
+	    contentType: "application/json; charset=utf-8",
+	    dataType: "json",
+	    //callback
+	    success: function(res) {
+	    alert("fetch result");
+	    console.log(res);
+	    alert(JSON.stringify(res));
+	    $(document.body).append(res);
+	    }
+	   });
+	  alert("Ajax request excuted");	
+}
+//=========================================================================
+//
+//===========================================================================
+//
+var url = "http://memo-app-services.appspot.com/agent";
+testPost = function (){
+	$.ajax({
+	    type: "POST",
+	    contentType: "application/json; charset=utf-8",
+	    data: {"name":"Tigist3","lat":"2.2","lon":"2.5"},  
+	    dataType: "json",
+	    url: url,
+	    success: function(msg){ alert("agent info posted"); },
+	    error: function (XMLHttpRequest, textStatus, errorThrown) {
+	        alert(errorThrown);
+	        alert("ok!");
+	          }
+	});
+}
+alert("Application started");
+</script>
+<h4>Mobile agent, test 3</h4>
+<button id= "testCallbtn" onclick="testCall();">Test API</button><br />
+<button id = "getDatabtn" onclick="ajaxGetData();">Get data</button><br />
+<button id = "testPostbtn" onclick="testPost();">Test post</button><br />
+
+</body>
+</html>
