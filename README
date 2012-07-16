@@ -1,10 +1,9 @@
 
-
 Android mobile application
 
 
 Dir MobApp is an android project file that enable android phone to access web application using PhoneGap.
 
-Dir MobAppAgent the file for the web application running on App Engine.
+Dir MobAppAgent is the file for the web application running on App Engine.
 
 
