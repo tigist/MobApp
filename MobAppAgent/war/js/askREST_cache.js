@@ -1,3 +1,11 @@
+session = {
+		 appServices:"http://memo-app-services.appspot.com/",
+		 // appServices:"http://memoapp-services.appspot.com/",
+	      sessionKey:"fooBar",
+	      isSession:function(){return true},
+	      addCallback:function(){},
+	      authenticator:function(){}
+};
 /* File contains offline REST cache and cacheRegister */
 var caches = new CacheRegister();
 
@@ -8,14 +16,13 @@ var caches = new CacheRegister();
 
 function ASKCache(label,url,data,idQuery,session,idLoop){
 	//constructor parameters:
-	this.hidden_repeat=300000;
-	this.shown_repeat=30000;
+	this.hidden_repeat=100000;
+	this.shown_repeat=100000;
 	this.label=label;
 	this.url=session.appServices+url;
 	this.data=data;
 	this.idQuery=idQuery;
 	this.session=session;
-	
 	
 	this.renderers={};
 	this.idLoop=false;
@@ -74,8 +81,9 @@ ASKCache.prototype.render = function(){
 	var cache = this;
 	//var page = $.mobile.activePage;
 	var page=null;
-	var render_list = this.renderers["all"];
-	if (page && page != null){
+	var render_list = this.renderers["all"];  //all functions send as request
+	//alert(render_list);
+	/*if (page && page != null){ //it is null now
 		var page_list = this.renderers[page.jqmData("url")];
 		if (page_list){
 			if (render_list){
@@ -84,7 +92,7 @@ ASKCache.prototype.render = function(){
 				render_list = page_list;
 			}
 		}
-	} 
+	} */
 	if (!render_list){
 		return;
 	} 
@@ -176,7 +184,6 @@ ASKCache.prototype.array2list = function(arr){
 	}
 	return res;
 }
-
 ASKCache.prototype.storeList = function(myData){
 	var cache = this;
 	if (cache.onChangeCBs && cache.onChangeCBs.length > 0){
@@ -406,6 +413,12 @@ ASKCache.prototype.sync =	function(){
 						var len=idList.length;
 						for (var i=0; i<len; i++){
 							var id=idList[i];
+							var callback_wrapper = function(local_id){
+								return function callback(res){
+									store_element(local_id,res.responseText);
+									cache.render();
+								}
+							}
 							$.Read(cache.url+id,cache.data,{
 								url:cache.url+id,
 								headers:{'X-SESSION_ID':cache.session.sessionKey},
@@ -413,10 +426,7 @@ ASKCache.prototype.sync =	function(){
 								      withCredentials: true
 								},
 								cache: false,
-								200:function callback(res){
-									store_element(id,res.responseText);
-									cache.render();
-								},
+								200:callback_wrapper(id),
 								403:function callback(res){
 									forbidden();
 								},
@@ -574,4 +584,89 @@ CacheRegister.prototype.startAll = function(){
 }
 
 
+//======================================================
+ASKCache.prototype.post = function(){
+    var divValues = $('input[type=text]');
+    var obj = {};
+    $.map(divValues, function(n, i) {
+        obj[n.name] = $(n).val();
+    });
 
+    alert(JSON.stringify(obj));
+    
+	var url = "http://memo-app-services.appspot.com/agent/";
+	var data = obj;
+	 $.ajax({
+		 type: "POST",
+			 xhrFields:{
+     			withCredentials:true  
+ 			},
+ 				contentType:"application/json; charset=utf-8",
+				 data: JSON.stringify(data), 
+ 				 url: url,
+				 success: function(msg){ alert("new agent id : " +  msg); },
+				 error: function (XMLHttpRequest, textStatus, errorThrown) {alert(textStatus);}
+			});
+	}
+/*
+ASKCache.prototype.update = function(){
+    var divValues = $('input[type=text]');
+    var obj = {};
+    $.map(divValues, function(n, i) {
+        obj[n.name] = $(n).val();
+    });
+
+    alert(JSON.stringify(obj));
+    
+	var url = "http://memo-app-services.appspot.com/agent/";
+	var data = obj;
+	
+var uuid = uuidValue;
+var url = "http://memo-app-services.appspot.com/agent/" + uuid;
+var data = {"lat":"0","lon":"0","name":"assistant-modified"};
+
+ $.ajax({
+	type: "PUT",
+    xhrFields:{
+        withCredentials:true  
+    },
+    contentType:"application/json; charset=utf-8",
+    data: JSON.stringify(data), 
+    url: url,
+    success: function(msg){ console.log("agent " +  msg + "updated"); },
+    error: function(a,b,c) {
+        console.log("XMLHttpRequest: " + a);
+        console.log("textStatus: " + b);
+        console.log("errorThrown: " + c);
+     } });
+}
+//===========================================================
+ ASKCache.prototype.retrieve = function(json,olddata , cache) {  
+	 alert("test");
+//var my_renderer1 = function(json,olddata , cache){
+	 if(json && json != "") {
+	        console.log("running mme! "); 
+	        console.log(JSON.stringify(json));
+	       
+	        var info3 = json;
+	        var tmp='';
+	        for (var i=0; i<info3.length; i++){
+	       	 tmp+="lat = "+ info3[i].lat+'<br>'
+	        	    +"lon = "+ info3[i].lon +'<br>'
+	        	    +"name = "+ info3[i].name +'<br>'
+	         	    +"uuid = "+ info3[i].uuid +'<hr>';
+	         	    var lon = info3[i].lon;
+	         	    var lat = info3[i].lat;
+	         	    var name = info3[i].name;
+	         	    var uuidValue = info3[i].uuid
+	         	    if (info3[i].name == "staff"){
+	        		document.getElementById('lon').value=lon; 
+	        		document.getElementById('lat').value=lat; 
+	        		document.getElementById('name').value=name; 
+	        		
+	         	    }
+	         }
+	        alert("test1"); 	    
+		}
+}
+*/

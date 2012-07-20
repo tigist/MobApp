@@ -42,7 +42,7 @@ getAgentInfo= function(){
 	}
 //=======================================================================================
 //
-doPost = function (){
+testPost = function (){
 	var url = "http://memo-app-services.appspot.com/agent/";
 	var data = {"lat":"1.4563245","lon":"-6.324632","name":"Tigist 11"};
     $.ajax({
@@ -80,28 +80,15 @@ doUpdate = function (){
 //
 
 var setupCache = function() {  
-	console.log(caches);
-                        if(!caches.exists("lebel")) {
-                       		console.log("Init Cache");
-                            cache = new ASKCache("label","agent/",null,"uuid",session,true);
-                           
-                          //  cache.addRenderer('all', renderer);
-                           // cache.onChangeCBs[cache.onChangeCBs.length]=function(a,b){console.log(a,b);};
-                           // cache.render(); 
-                            alert("new cache created");
-                        }else{
-                        	alert("cache already found");
-                        }                       
-             		}        
-
-
-
-var renderer = function(json, olddata, cache) { 
-    if(json && json != "") {
-       var elem = {"lat":"3.345672","lon":"-2.436338383","name":"tg","uuid":"c854a220-c072-11e1-b9d9-00007f000001"};
-        elem.show();
-     } 
-}  
-var show = function(){
-	alert("reload html page with");
-}
+	 console.log(caches);
+    if(!caches.exists("lebel")) {
+   	 console.log("Init Cache");
+        cache = new ASKCache("label","agent/",null,"uuid",session,true);
+        cache.addRenderer('all', my_renderer);
+        cache.onChangeCBs[cache.onChangeCBs.length]=function(a,b){console.log(a,b);};
+        cache.render(); 
+        alert("new cache created");
+    }else{
+    	alert("cache already found");
+    }                       
+	} 
