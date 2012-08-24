@@ -1,148 +1,161 @@
 <!DOCTYPE HTML>
 <html>
+<meta charset="UTF-8">
 <head>
 <title>BRIDGE Mob agent demo</title>
+<style type="text/css">
+      .button
+	      {
+	      background: Image/refresh.png; 
+	      cursor:pointer;
+	                  border: none;
+	      }
+</style>
+
+<link type="text/css" href="css/smoothness/jquery-ui-1.8.23.custom.css" rel="Stylesheet" />	
 <script type="text/javascript" charset="utf-8" src="js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="js/jquery-ui-1.8.23.custom.min.js"></script>
 <script type="text/javascript" charset="utf-8" src="js/jquery.rest.min.js"></script>
 <script type="text/javascript" charset="utf-8" src="js/jquery.json-2.3.min.js"></script>
-<script type="text/javascript" charset="utf-8" >
+<script type="text/javascript" charset="utf-8" src="js/cordova-1.8.0.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SystemNotification.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/renderer2.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/askREST_cache.js"></script>
 
-var my_renderer = function(json,olddata , cache) {  
-        if(json && json != "") {
-            console.log("running! "); 
-            console.log(JSON.stringify(json));
-           
-            var info3 = json;
-            var tmp='';
-            for (var i=0; i<info3.length; i++){
-           	 tmp+="lat = "+ info3[i].lat+'<br>'
-            	    +"lon = "+ info3[i].lon +'<br>'
-            	    +"name = "+ info3[i].name +'<br>'
-             	    +"uuid = "+ info3[i].uuid +'<hr>';
-            		document.getElementById('cache-data').innerHTML=tmp; 
-            }
-  	}
+<script type="text/javascript" charset="utf-8">
+ 
+	$(function() {
+		$( "#tabs" ).tabs();
+		
+	});
+</script>
+	
+<script type="text/javascript" charset="utf-8">
+
+function notification() {    				
+    document.addEventListener('deviceready', onDeviceReady ,false);
 }
 
-var my_renderer1 = function(json, olddata , cache){
-		 if(json && json != "") {
-			console.log("running my_reneder1! "); 
-	        console.log(JSON.stringify(json));
-	        var info3 = json;
-	        var tmp='';
-	        if (document.getElementById('search').value!=null){
-	        	var nameValue = document.getElementById('search').value
-	       		 for (var i=0; i<info3.length; i++){	      
-	         	    var lon = info3[i].lon;
-	         	    var lat = info3[i].lat;
-	         	    var name = info3[i].name;
-	         	    var uuidValue = info3[i].uuid
-	         	    if (info3[i].name == nameValue){//similarity maching for string name can be modified
-	        			document.getElementById('lon').value=lon; 
-	        			document.getElementById('lat').value=lat; 
-	        			document.getElementById('name').value=name; 
-	        			document.getElementById('uuid').value=uuidValue;
-	        			}
-	         	   }
-	       		 }else{
-	       			 alert("search agent by name before you update");
-	       		 }
-	        
-	        }
-		 }
+function onDeviceReady(){	
+	console.log("device is ready");
+	  
+	window.plugins.PaigeSystemNotification.createStatusBarNotification("Title","Notification","Alert"); 
+	//window.plugins.webView.sendAppToFront();
+	navigator.geolocation.getCurrentPosition(onSuccess, onError);
+	}
+ function appFront(){
+	 //setTimeout(function(){
+		 window.plugins.PaigeSystemNotification.updateNotification("Title","Notification","Alert"); 
+	
+		 window.plugins.webView.sendAppToFront();
+		// },10000);
+ }
+ function onSuccess(position) {
+	 var lat = position.coords.latitude;
+	 var lon =  position.coords.longitude;	 
+	 console.log(position.coords.latitude + "-" + position.coords.longitude);
+	 alert("u r located at + (" + lat + " ,  " + lon + ")");
+ }
+ 
 
-update = function(){
-   			var divValues = $('input[type=text]');
-    		var obj = {};
-    		$.map(divValues, function(n, i) {
-        		obj[n.name] = $(n).val();
-   			 });
+function onError(error) {	
+      alert('code: '    + error.code     +      
+     'message: ' + error.message + '\n');  
+	  }
 
-    		alert(JSON.stringify(obj));
-   			var uuid = document.getElementById('uuid').value;
-   				if (uuid == null){alert("you can update existining agent only")};
-   				alert(uuid);
-				var url = "http://memo-app-services.appspot.com/agent/" + uuid;
-				var data = obj; //{"lat":"0","lon":"0","name":"assistant-modified"};
+//setupCache for task
+var setupCache = function() { 
+	var j = document.getElementById('login').value;	
+ 	var uuid = identifier(j,agents);
+		 console.log("uuid = " + uuid);
+	 if(!caches.exists("label")) {
+		 alert("Application started")
+		 console.log("Init Cache label");	
+		 cache = new ASKCache("label", "agent/" + uuid + "/tasks" ,null,"id",session,false);//for task 
+		 cache.addRenderer('all', my_renderer);	
+         cache.onChangeCBs[cache.onChangeCBs.length]=
+        	 function(a,b){console.log(a,b);
+        		 if(a !== null && (JSON.stringify(a) !== JSON.stringify(b))){
+        			notification();//repeat the notification sound         			
+					appFront(); //onchange only app to front
+					//alert("there is an update");
+				}
+        	 };
+         cache.render(); 
+         
+	}else{
+        	 alert("Loading information ...");
+             cache.addRenderer('all', my_renderer);           
+             cache.onChangeCBs[cache.onChangeCBs.length]=
+            	 function(a,b){console.log(a,b);
+            		 if(a !== null && (JSON.stringify(a) !== JSON.stringify(b)) ){
+            			notification();//repeat the notification sound         			
+    					appFront(); //onchange only app to front
+    					//alert("there is an update");
+    			}
+           };
+            	// cache.render(); //???
+     }
+} 
 
- 				$.ajax({
-					 type: "PUT",
-   					 xhrFields:{
-        				withCredentials:true  
-    				},
-    				contentType:"application/json; charset=utf-8",
-    				data: JSON.stringify(data), 
-    				url: url,
-   					success: function(msg){ console.log("agent " +  msg + "updated"); },
-   					error: function(a,b,c) {
-      					 console.log("XMLHttpRequest: " + a);
-       					 console.log("textStatus: " + b);
-       					 console.log("errorThrown: " + c);
-       					 } 
-   					});
- 				}
-
-
+//setupCache for agent
+var setupCacheAgent = function() { 	
+	 if(!caches.exists("agentCache")) {
+		 console.log("Init Cache agent");	
+		 cache = new ASKCache("agentCache","agent/",null,"uuid",session,true); // cache for agents
+		 cache.addRenderer("all", agent_renderer);
+	 }
+}
+var okClick = function(){	
+	var pin = document.getElementById('login').value;
+	if(pin == ""){
+		alert("Please enter your pin code");
+		}else{
+		var start = document.getElementById('start');
+		start.disabled= false;
+		setupCacheAgent();	
+		var msg = document.getElementById('msg');		
+		msg.innerHTML="You are logged in successfully! <br> Now you can start the application to<br>see the incoming and operational task"
+		}
+	}
 </script>
-<script type="text/javascript" charset="utf-8" src="js/askREST_cache.js"></script>
-<script type="text/javascript" src="js/angular-1.0.0rc9.min.js"></script>
-
 </head>
-<body >
+<body onLoad = notification();>
+ 
+<div class="Bridge-demo">
 
-<script type="text/javascript">
-doPost = function (){
-    			cache.post();
-			}
-
-var setupCache = function() {  
-					     if(!caches.exists("label")) {
-                    	 console.log("Init Cache");
-                         cache = new ASKCache("label","agent/",null,"uuid",session,true);
-                         cache.addRenderer('all', my_renderer);
-                         cache.onChangeCBs[cache.onChangeCBs.length]=function(a,b){console.log(a,b);};
-                         cache.render(); 
-                         alert("new cache created");
-                     }else{
-                     	alert("cache already exist");
-						
-                     }                       
-          		} 
-var setupCache1 = function() {  
-    				if(!caches.exists("label")) {
-	 					console.log("Init Cache");
-    					cache = new ASKCache("label","agent/",null,"uuid",session,true);
-   						cache.addRenderer('all', my_renderer);
-   						cache.onChangeCBs[cache.onChangeCBs.length]=function(a,b){console.log(a,b);};
-    					cache.render(); 
-   						alert("new cache created");
-					}else{
-						alert("cache already exist continoue to update");
-						cache.addRenderer('all', my_renderer1);
-						}
-    				}
-</script>
-
-<h4>Mobile agent, test 3</h4>
-	<button id= "start" onclick="setupCache();"> start </button>
-	<button id = "Postbtn" onclick="doPost();">Create agent</button>
-	<button id= "start" onclick="setupCache1();"> starter </button>	
-	<button id = "update" onclick="update();">update agent</button><br>
-	search agent by name: <input name ="search" id="search" >
+<div id="tabs" style="font-size:medium;">
+	<ul>
+		<li id='li0'><a href="#tabs-0">Login</a></li>
+		<li id='li1'><a href="#tabs-1">Incoming</a></li>
+		<li id='li2'><a href="#tabs-2">Operational</a></li>		
+	</ul>
 	
-
-	<div id="ele" name ="ele" style=" border: black 2px dashed; width:350px;" >
-		lon: <input type= "text" id="lon" name="lon" /><br>
-		lat:<input type= "text" id="lat" name = "lat"/><br>
-		name<input type= "text" id="name" name="name"/><br>
-	</div><br />
+	<div id="tabs-0">
+		
+			Pin :
+			<input type="text" id="login"  size="4">
+			<input type = "button" id="btnOk"  value ="ok" onclick = "okClick();" >	
+			<input type="image" src="Image/refresh.png"  align="right"  width="48 height="48" onClick="history.go(0);" /><br>
+			
+		
+		<span id = "msg"></span>
+	</div>	
 	
-	<div id="cache-data" style="width:400px;float:left;"></div><br />	
+	<div id="tabs-1">
+		<input type = "button" id="start" onclick = "setupCache();" value ="start" disabled="disabled">		
+		
+		<input type="image" src="Image/refresh.png"  align="right"  width="48 height="48" onClick="history.go(0);" />
+		
+		<ul id = "selectable"></ul>
+	</div>
 	
-	<input type="hidden" name ="uuid" id="uuid" ><br>
-	
-	<form>
-		<input type="button" value ="Reload Page" onClick="history.go(0)">
-	</form>
+	<div id="tabs-2">
+	Oprational tasks: 
+		<input type="image" src="Image/refresh.png"  align="right"  width="48 height="48" onClick="history.go(0);" />
+		<ul id = "selectable1"></ul>
+	</div>	
+</div>
+</div>	
 </body>
 </html>

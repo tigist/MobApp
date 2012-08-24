@@ -18,6 +18,9 @@
        under the License.
 -->
 <plugins>
+    <plugin name="SystemNotification" value="com.almende.plugin.SystemNotification"/>
+    <plugin name="WebViewPG" value="com.almende.plugin.WebViewPG"/>
+   
     <plugin name="App" value="org.apache.cordova.App"/>
     <plugin name="Geolocation" value="org.apache.cordova.GeoBroker"/>
     <plugin name="Device" value="org.apache.cordova.Device"/>

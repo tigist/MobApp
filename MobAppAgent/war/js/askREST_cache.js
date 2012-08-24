@@ -1,6 +1,5 @@
 session = {
-		 appServices:"http://memo-app-services.appspot.com/",
-		 // appServices:"http://memoapp-services.appspot.com/",
+		 appServices:"http://memo-app-services.appspot.com/", // agent/ added
 	      sessionKey:"fooBar",
 	      isSession:function(){return true},
 	      addCallback:function(){},
@@ -16,11 +15,11 @@ var caches = new CacheRegister();
 
 function ASKCache(label,url,data,idQuery,session,idLoop){
 	//constructor parameters:
-	this.hidden_repeat=100000;
-	this.shown_repeat=100000;
+	this.hidden_repeat=10000;
+	this.shown_repeat=10000;
 	this.label=label;
 	this.url=session.appServices+url;
-	this.data=data;
+	this.data=data;  //what is this data?
 	this.idQuery=idQuery;
 	this.session=session;
 	
@@ -98,7 +97,7 @@ ASKCache.prototype.render = function(){
 	} 
 	render_list.map(function (renderer){
 		if (renderer && typeof renderer == "function"){
-			if (new Date().getTime() - cache.lastUpdate > 5*60*1000){
+			if (new Date().getTime() - cache.lastUpdate > 5*20*100){//5*60*1000
 				renderer(cache.getArray(),true,cache);
 			} else {
 				renderer(cache.getArray(),false,cache);
@@ -167,8 +166,10 @@ ASKCache.prototype.array2list = function(arr){
 	var res = {};
 	var cache = this;
 	function add(element){
-		eval("var id = element."+cache.idQuery); //nice in its ugliness
-		res[id]={"id":id,"state":"normal","data":element};
+	    //eval("var id = element."+cache.idQuery); //nice in its ugliness
+		//res[id]={"id":id,"state":"normal","data":element};
+		eval("var id = element."+ cache.idQuery); //nice in its ugliness
+		res[id]={"id":id,"state":"normal","data":element };
 		return null;
 	}
 	if (arr == null){
@@ -235,9 +236,11 @@ ASKCache.prototype.addElement = function(id,element){
 	if (id == null) id = createUUID();
 	if (myData[id] && myData[id].state != "added"){
 		myData[id]={"id":id,"state":"updated","data":element};
+		//myData[id]={"data":element};
 		console.log("storing (u):"+id+":",element);
 	} else { 	
 		myData[id]={"id":id,"state":"added","data":element};
+		//myData[id]={"data":element};
 		console.log("storing (a):"+id+":",JSON.stringify(element));
 	}
 	this.storeList(myData);
@@ -521,7 +524,7 @@ CacheRegister.prototype.getList = function (key){
 
 CacheRegister.prototype.waitForCache = function (key,success,failure,interval,count){
 	if (typeof count == "undefined") count=5;
-	if (typeof interval == "undefined") interval=1000; 
+	if (typeof interval == "undefined") interval=10000;
 	if (!this[key]){
 		if (count-- <= 0){
 			return (typeof failure == "function")?failure():null;
@@ -585,88 +588,3 @@ CacheRegister.prototype.startAll = function(){
 
 
 //======================================================
-ASKCache.prototype.post = function(){
-    var divValues = $('input[type=text]');
-    var obj = {};
-    $.map(divValues, function(n, i) {
-        obj[n.name] = $(n).val();
-    });
-
-    alert(JSON.stringify(obj));
-    
-	var url = "http://memo-app-services.appspot.com/agent/";
-	var data = obj;
-	 $.ajax({
-		 type: "POST",
-			 xhrFields:{
-     			withCredentials:true  
- 			},
- 				contentType:"application/json; charset=utf-8",
-				 data: JSON.stringify(data), 
- 				 url: url,
-				 success: function(msg){ alert("new agent id : " +  msg); },
-				 error: function (XMLHttpRequest, textStatus, errorThrown) {alert(textStatus);}
-			});
-	}
-/*
-ASKCache.prototype.update = function(){
-    var divValues = $('input[type=text]');
-    var obj = {};
-    $.map(divValues, function(n, i) {
-        obj[n.name] = $(n).val();
-    });
-
-    alert(JSON.stringify(obj));
-    
-	var url = "http://memo-app-services.appspot.com/agent/";
-	var data = obj;
-	
-var uuid = uuidValue;
-var url = "http://memo-app-services.appspot.com/agent/" + uuid;
-var data = {"lat":"0","lon":"0","name":"assistant-modified"};
-
- $.ajax({
-	type: "PUT",
-    xhrFields:{
-        withCredentials:true  
-    },
-    contentType:"application/json; charset=utf-8",
-    data: JSON.stringify(data), 
-    url: url,
-    success: function(msg){ console.log("agent " +  msg + "updated"); },
-    error: function(a,b,c) {
-        console.log("XMLHttpRequest: " + a);
-        console.log("textStatus: " + b);
-        console.log("errorThrown: " + c);
-     } });
-}
-//===========================================================
- ASKCache.prototype.retrieve = function(json,olddata , cache) {  
-	 alert("test");
-//var my_renderer1 = function(json,olddata , cache){
-	 if(json && json != "") {
-	        console.log("running mme! "); 
-	        console.log(JSON.stringify(json));
-	       
-	        var info3 = json;
-	        var tmp='';
-	        for (var i=0; i<info3.length; i++){
-	       	 tmp+="lat = "+ info3[i].lat+'<br>'
-	        	    +"lon = "+ info3[i].lon +'<br>'
-	        	    +"name = "+ info3[i].name +'<br>'
-	         	    +"uuid = "+ info3[i].uuid +'<hr>';
-	         	    var lon = info3[i].lon;
-	         	    var lat = info3[i].lat;
-	         	    var name = info3[i].name;
-	         	    var uuidValue = info3[i].uuid
-	         	    if (info3[i].name == "staff"){
-	        		document.getElementById('lon').value=lon; 
-	        		document.getElementById('lat').value=lat; 
-	        		document.getElementById('name').value=name; 
-	        		
-	         	    }
-	         }
-	        alert("test1"); 	    
-		}
-}
-*/
