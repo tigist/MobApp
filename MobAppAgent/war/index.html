@@ -3,15 +3,6 @@
 <meta charset="UTF-8">
 <head>
 <title>BRIDGE Mob agent demo</title>
-<style type="text/css">
-      .button
-	      {
-	      background: Image/refresh.png; 
-	      cursor:pointer;
-	                  border: none;
-	      }
-</style>
-
 <link type="text/css" href="css/smoothness/jquery-ui-1.8.23.custom.css" rel="Stylesheet" />	
 <script type="text/javascript" charset="utf-8" src="js/jquery-1.7.2.min.js"></script>
 <script type="text/javascript" src="js/jquery-ui-1.8.23.custom.min.js"></script>
@@ -54,7 +45,7 @@ function onDeviceReady(){
 	 var lat = position.coords.latitude;
 	 var lon =  position.coords.longitude;	 
 	 console.log(position.coords.latitude + "-" + position.coords.longitude);
-	 alert("u r located at + (" + lat + " ,  " + lon + ")");
+	// alert("u r located at + (" + lat + " ,  " + lon + ")");
  }
  
 
@@ -67,9 +58,9 @@ function onError(error) {
 var setupCache = function() { 
 	var j = document.getElementById('login').value;	
  	var uuid = identifier(j,agents);
-		 console.log("uuid = " + uuid);
+		console.log("agent uuid = " + uuid);  
 	 if(!caches.exists("label")) {
-		 alert("Application started")
+		 alert("Application started loading task list..")
 		 console.log("Init Cache label");	
 		 cache = new ASKCache("label", "agent/" + uuid + "/tasks" ,null,"id",session,false);//for task 
 		 cache.addRenderer('all', my_renderer);	
@@ -84,7 +75,8 @@ var setupCache = function() {
          cache.render(); 
          
 	}else{
-        	 alert("Loading information ...");
+		//cache.clear();	 
+		alert("Loading task information ...");
              cache.addRenderer('all', my_renderer);           
              cache.onChangeCBs[cache.onChangeCBs.length]=
             	 function(a,b){console.log(a,b);
@@ -94,15 +86,19 @@ var setupCache = function() {
     					//alert("there is an update");
     			}
            };
-            	// cache.render(); //???
+           //  cache.render(); //???
      }
 } 
 
 //setupCache for agent
 var setupCacheAgent = function() { 	
-	 if(!caches.exists("agentCache")) {
+	 if(!caches.exists("agent")) {
 		 console.log("Init Cache agent");	
-		 cache = new ASKCache("agentCache","agent/",null,"uuid",session,true); // cache for agents
+		 cache = new ASKCache("agent","agent/",null,"uuid",session,true); // cache for agents
+		 cache.addRenderer("all", agent_renderer);
+	 }else{
+		 //cache.clear();
+		 alert("Loading personal information...")
 		 cache.addRenderer("all", agent_renderer);
 	 }
 }
@@ -111,11 +107,18 @@ var okClick = function(){
 	if(pin == ""){
 		alert("Please enter your pin code");
 		}else{
-		var start = document.getElementById('start');
-		start.disabled= false;
-		setupCacheAgent();	
-		var msg = document.getElementById('msg');		
-		msg.innerHTML="You are logged in successfully! <br> Now you can start the application to<br>see the incoming and operational task"
+			
+			setupCacheAgent();	
+			
+			setTimeout(function(){				
+				alert("Now You can view your task list");
+				$( "#tabs" ).tabs( "select" , 1 );
+				var start = document.getElementById('start');
+				start.disabled= false;
+				},10000);
+			
+			
+
 		}
 	}
 </script>
@@ -151,7 +154,7 @@ var okClick = function(){
 	</div>
 	
 	<div id="tabs-2">
-	Oprational tasks: 
+	Operational tasks: 
 		<input type="image" src="Image/refresh.png"  align="right"  width="48 height="48" onClick="history.go(0);" />
 		<ul id = "selectable1"></ul>
 	</div>	

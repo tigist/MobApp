@@ -6,8 +6,9 @@ var agent_renderer = function(json, cache){
          console.log(JSON.stringify(json));         
          agents= json; 
          var i=0;
-         for (i = 0 ; i<agents.length;i++){        
+         for (i = 0 ; i<agents.length; i++){        
         	 identifier(i,agents);
+        	 
          }
 	 }
 }
@@ -15,16 +16,14 @@ var agent_renderer = function(json, cache){
 //user login identifier
 identifier = function(i,agents){	
 	  var pin = document.getElementById('login').value;//default value should be null		
-	  if (pin == ""){
-			console.log("login code empty");
+	  if (pin > agents.length){
+			console.log("Please enter correct code!!!");			
 		}
 		else if(pin == i){	
-			var agentId=  agents[i].uuid;
-			console.log("agent uuid with pin  " + i +" = "+ agentId);
+			var agentId =  agents[i].uuid;
+			console.log("agent uuid with pin  " + i + " = " + agentId);
 			return agentId;
-			
 		}
-	  
 	}
 		
 //task renderer		
@@ -52,12 +51,21 @@ var my_renderer = function(json, cache) {
 //Create html elements dynamically and append the task detail
 newTask = function(i, task){
 	var taskState = task[i].state;
-	if (taskState == 'pending'){	 
+	if (taskState == 'pending'){
+		
+		var resourceList ="";
+		for(var j=0 ; j<task[i].resources.length; j++){
+			var type = task[i].resources[j].type;
+			if(type == "human"){
+				resourceList +=	"personnel: " + task[i].resources[j].details.role + '<br>';
+			}else if(type=="car"){
+				resourceList +=	"CarType: " + task[i].resources[j].details.carType + '<br>';
+			}					 
+		}
 		var newTaskDetail =  "location:  ("+ task[i].lat +' , '+ task[i].lon +' )<br>'
-							  +"resources: " + task[i].resources[i].details.role 
-							  +"<br>       "+ task[i].resources[i+1].details.role 
-							  +"<br>      "+ task[i].resources[i].details.carType +'<br>'
-							  +"state: "+ task[i].state +'<br>';
+		 					+ "resources: "  + '<br>' + resourceList 
+		 					+"state: "+ task[i].state +'<br>';
+		
 		console.log("pending task detail = " + newTaskDetail);
 	    var myli = document.createElement('li'); 
 	        myli.id =  i;
@@ -101,11 +109,18 @@ newTask = function(i, task){
 		     selectable.appendChild(mydivD);  
 		     
 	 }else if (taskState =='operational'){
-		 var operationalTask = "location:  ("+ task[i].lat +' , '+ task[i].lon +' )<br>'
-								+"resources: " + task[i].resources[i].details.role 
-								+"<br>      "+ task[i].resources[i+1].details.role 
-								+"<br>      "+ task[i].resources[i+1].details.carType +'<br>'
-								+"state: "+ task[i].state +'<br>';
+		 var resourceList ="";
+			for(var j=0 ; j<task[i].resources.length; j++){
+				var type = task[i].resources[j].type;
+				if(type == "human"){
+					resourceList +=	"personnel " + task[i].resources[j].details.role + '<br>';
+				}else if(type=="car"){
+					resourceList +=	"Car type " + task[i].resources[j].details.carType + '<br>';
+				}					 
+			}
+			var operationalTask =  "location:  ("+ task[i].lat +' , '+ task[i].lon +' )<br>'
+			 						+ "resources: "  + '<br>' + resourceList  +'<br>'
+			 						+ "state: "+ task[i].state +'<br>';
 		 console.log("operational task " + i + " detail is "+ operationalTask); 
 		
 		var myli = document.createElement('li'); 
@@ -161,9 +176,9 @@ var change = function(i, task){
 				var valRej = 'btnreject'+i;
 				var valStrng = valRej.toString();		
 				var rejectbtn = document.getElementById(valStrng);			
-					rejectbtn.title = "withdrow";
-					rejectbtn.value = "withdrow";
-					rejectbtn.name = "withdrow";
+					rejectbtn.title = "withdraw";
+					rejectbtn.value = "withdraw";
+					rejectbtn.name = "withdraw";
 					accept.title = "you have already accepted this task";					
 					accept.disabled = true;			
 			}
