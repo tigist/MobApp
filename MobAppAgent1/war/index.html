@@ -1,0 +1,106 @@
+<!DOCTYPE HTML>
+<html>
+<meta charset="UTF-8">
+<head>
+<title>BRIDGE Mob agent demo</title>
+<link type="text/css" href="css/smoothness/jquery-ui-1.8.23.custom.css" rel="Stylesheet" />	
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="js/jquery-ui-1.8.23.custom.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.rest.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.json-2.3.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/cordova-1.8.0.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SystemNotification.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/renderer2.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/askREST_cache.js"></script>
+
+<script type="text/javascript" charset="utf-8">
+ 
+	$(function() {
+		$( "#tabs" ).tabs();
+		
+	});
+</script>
+	
+<script type="text/javascript" charset="utf-8">
+
+/**
+ * setupCache for agent
+ */
+var setupCacheAgent = function() { 
+	
+	var srch = document.getElementById('login').value
+	if (srch == ''){
+		alert("Please enter your pin code");
+	}else{
+	    if(!caches.exists("agent")) {
+			 console.log("Init Cache agent");	
+			 cache = new ASKCache("agent","agent/",null,"uuid",session,true); // cache for agents
+			 cache.addRenderer("all", agent_renderer);
+			 //cache.addRenderer("all", loginMessage);
+	 	}else{
+		 	 //cache.clear();
+			 console.log("Loading agent information...")
+			 cache.addRenderer("all", agent_renderer);
+	 	}
+	}
+}
+
+/**
+ * login function 
+ */
+var okClick = function(){	
+	
+	var pin = document.getElementById('login').value;
+	if(pin == ""){
+		alert("Please enter your pin code");
+		}else{
+			setupCacheAgent();
+			
+			var loadingdiv1 = document.getElementById('loading1');
+			loadingdiv1.style.visibility = "visible";
+			var loadingdiv2 = document.getElementById('loading2');
+			loadingdiv2.style.visibility = "visible";
+			$( "#tabs" ).tabs( "select" , 1 );	
+		}
+	}
+		
+</script>
+</head>
+<body>
+ 
+<div class="Bridge-demo">
+
+<div id="tabs" style="font-size:medium;" src="Image/refresh.png" width="30" height="30">
+	<ul  >
+		<li id='li0'><a href="#tabs-0">Login</a></li>
+		<li id='li1'><a href="#tabs-1">Incoming</a></li>
+		<li id='li2'><a href="#tabs-2">Operational</a></li>				
+	</ul>
+	
+	<div id="tabs-0">
+	Pin :
+		<input type="text" id="login"  size="4">
+		<input type = "button" id="btnOk"  value ="ok" onclick = "okClick();" >	
+	</div>	
+	
+	<div id="tabs-1">
+		<!-- <input type = "button" id="start" onclick = "setupCache();" value ="start" disabled="disabled"> -->		
+		<div id='loading1'  align="right"><img src="Image/loading5.gif" title="Loading" /></div>
+		
+		
+		<ul id = "selectable"></ul>
+	</div>
+	
+	<div id="tabs-2">
+		<div id='loading2'  style= "visibility:hidden" align="right"><img src="Image/loading5.gif" title="Loading" /></div>
+	
+	Operational tasks: 
+		<ul id = "selectable1"></ul>
+	</div>	
+	<div id="tabs-3">
+	
+	</div>
+</div>
+</div>	
+</body>
+</html>
