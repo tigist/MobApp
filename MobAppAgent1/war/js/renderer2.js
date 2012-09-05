@@ -40,8 +40,9 @@ function onDeviceReady(){
 *
 */
  var done_before=false;
+ var flag = 0;
  var agent_renderer = function(json,oldData, cache){
-	 flag = 0;	
+		
 	 if(json && json != "") {
          console.log(" list of gents! "); 
          console.log(JSON.stringify(json));         
@@ -53,19 +54,27 @@ function onDeviceReady(){
         		if (agent[i].login == login){
         			uuidValue = agent[i].uuid;
             		code = agent[i].login;
+            		flag = 1;
         			//Callback the task cache for current uuidvalue
             		if (!done_before){
             			setupCacheTask();	
             			done_before=true;
             		}
         			cache.stop();
+        			
         		}
+        		//loginMessage();
         	 }
        	
          }
-          
+                    
 	 }
 }
+ var loginMessage = function(){
+	 if(flag != 1){
+	 		alert("Login code incorrect! Try again ok.");
+	 	}
+ }
 
 /**
  * setupCacheTask is a callback method to create task cache for particular user. 
@@ -78,6 +87,7 @@ function onDeviceReady(){
 
 var setupCacheTask = function() { 
  	var uuid = uuidValue; //from the super agent function
+ 	
     if(!caches.exists("label")) {
 		 console.log("Application started loading task list..")
 		 console.log("Init Cache label");	

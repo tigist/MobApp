@@ -58,20 +58,23 @@ var setupCacheAgent = function() {
 var loginOkClicked = function(){	
 	
 	var pin = document.getElementById('login').value;
+	
 	if(pin == ""){
+		
 		alert("Please enter your pin code");
-		}else if(pin == 1 ||pin == 2 || pin == 3 || pin == 4 || pin == 5 ){
+		
+		}else{
 			
 			setupCacheAgent();
+			
 			var loadingdiv1 = document.getElementById('loading1');
 			loadingdiv1.style.visibility = "visible";
+			
 			var loadingdiv2 = document.getElementById('loading2');
 			loadingdiv2.style.visibility = "visible";
+			
 			$( "#tabs" ).tabs( "select" , 1 );	
 			
-		}else{
-			console.log("invalide user login code");
-			alert("invalide user login code");
 		}
 	
 	}
@@ -95,7 +98,7 @@ var loginOkClicked = function(){
 	<div id="tabs-0">
 	Pin :
 		<input type="text" id="login"  size="6">
-		<input type = "button" id="btnOk"  value ="ok" onclick = "okClick();" >	
+		<input type = "button" id="btnOk"  value ="ok" onclick = "loginOkClicked();" >	
 	</div>	
 	
 	<div id="tabs-1">
