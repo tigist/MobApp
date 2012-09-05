@@ -14,7 +14,9 @@
 <script type="text/javascript" charset="utf-8" src="js/askREST_cache.js"></script>
 
 <script type="text/javascript" charset="utf-8">
- 
+/**
+ * Create html view with tabs
+ */
 	$(function() {
 		$( "#tabs" ).tabs();
 		
@@ -24,21 +26,22 @@
 <script type="text/javascript" charset="utf-8">
 
 /**
- * setupCache for agent
+ * setupCacheAgent is a callback method to createcache for agents. 
+ * It create a cache containes list of all agent detail. The cache renedere 
+ * is created only once. The agent renderer callback used to retrieve current user 
+ * from list of agents. 
  */
 var setupCacheAgent = function() { 
 	
-	var srch = document.getElementById('login').value
-	if (srch == ''){
+	var pin = document.getElementById('login').value
+	if (pin == ''){
 		alert("Please enter your pin code");
 	}else{
 	    if(!caches.exists("agent")) {
 			 console.log("Init Cache agent");	
 			 cache = new ASKCache("agent","agent/",null,"uuid",session,true); // cache for agents
 			 cache.addRenderer("all", agent_renderer);
-			 //cache.addRenderer("all", loginMessage);
 	 	}else{
-		 	 //cache.clear();
 			 console.log("Loading agent information...")
 			 cache.addRenderer("all", agent_renderer);
 	 	}
@@ -46,23 +49,34 @@ var setupCacheAgent = function() {
 }
 
 /**
- * login function 
+ * loginOkClciked method check the user input for the pin code. In the agent database 
+ * we have agents with login code 1 - 5. If login code is different from the listed on
+ * it display error message. If login correct the loading icon is visible. And it switch 
+ * from the login tab to the incoming task tab
  */
-var okClick = function(){	
+
+var loginOkClicked = function(){	
 	
 	var pin = document.getElementById('login').value;
 	if(pin == ""){
 		alert("Please enter your pin code");
-		}else{
-			setupCacheAgent();
+		}else if(pin == 1 ||pin == 2 || pin == 3 || pin == 4 || pin == 5 ){
 			
+			setupCacheAgent();
 			var loadingdiv1 = document.getElementById('loading1');
 			loadingdiv1.style.visibility = "visible";
 			var loadingdiv2 = document.getElementById('loading2');
 			loadingdiv2.style.visibility = "visible";
 			$( "#tabs" ).tabs( "select" , 1 );	
+			
+		}else{
+			console.log("invalide user login code");
+			alert("invalide user login code");
 		}
+	
 	}
+	
+
 		
 </script>
 </head>
@@ -70,34 +84,31 @@ var okClick = function(){
  
 <div class="Bridge-demo">
 
-<div id="tabs" style="font-size:medium;" src="Image/refresh.png" width="30" height="30">
+<div id="tabs" style="font-size:medium;"  >
 	<ul  >
 		<li id='li0'><a href="#tabs-0">Login</a></li>
+		
 		<li id='li1'><a href="#tabs-1">Incoming</a></li>
 		<li id='li2'><a href="#tabs-2">Operational</a></li>				
 	</ul>
 	
 	<div id="tabs-0">
 	Pin :
-		<input type="text" id="login"  size="4">
+		<input type="text" id="login"  size="6">
 		<input type = "button" id="btnOk"  value ="ok" onclick = "okClick();" >	
 	</div>	
 	
 	<div id="tabs-1">
-		<!-- <input type = "button" id="start" onclick = "setupCache();" value ="start" disabled="disabled"> -->		
 		<div id='loading1'  align="right"><img src="Image/loading5.gif" title="Loading" /></div>
 		
-		
-		<ul id = "selectable"></ul>
+		<ul id = "taskList"></ul>
 	</div>
 	
 	<div id="tabs-2">
 		<div id='loading2'  style= "visibility:hidden" align="right"><img src="Image/loading5.gif" title="Loading" /></div>
 	
 	Operational tasks: 
-	
-		<ul id = "selectable1"></ul>
-		
+		<ul id = "taskList1"></ul>
 	</div>	
 	<div id="tabs-3">
 	
