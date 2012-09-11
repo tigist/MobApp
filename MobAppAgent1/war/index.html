@@ -12,7 +12,7 @@
 <script type="text/javascript" charset="utf-8" src="js/SystemNotification.js"></script>
 <script type="text/javascript" charset="utf-8" src="js/renderer2.js"></script>
 <script type="text/javascript" charset="utf-8" src="js/askREST_cache.js"></script>
-
+	
 <script type="text/javascript" charset="utf-8">
 /**
  * Create html view with tabs
@@ -21,97 +21,33 @@
 		$( "#tabs" ).tabs();
 		
 	});
-</script>
-	
-<script type="text/javascript" charset="utf-8">
-
-/**
- * setupCacheAgent is a callback method to createcache for agents. 
- * It create a cache containes list of all agent detail. The cache renedere 
- * is created only once. The agent renderer callback used to retrieve current user 
- * from list of agents. 
- */
-var setupCacheAgent = function() { 
-	
-	var pin = document.getElementById('login').value
-	if (pin == ''){
-		alert("Please enter your pin code");
-	}else{
-	    if(!caches.exists("agent")) {
-			 console.log("Init Cache agent");	
-			 cache = new ASKCache("agent","agent/",null,"uuid",session,true); // cache for agents
-			 cache.addRenderer("all", agent_renderer);
-	 	}else{
-			 console.log("Loading agent information...")
-			 cache.addRenderer("all", agent_renderer);
-	 	}
-	}
-}
-
-/**
- * loginOkClciked method check the user input for the pin code. In the agent database 
- * we have agents with login code 1 - 5. If login code is different from the listed on
- * it display error message. If login correct the loading icon is visible. And it switch 
- * from the login tab to the incoming task tab
- */
-
-var loginOkClicked = function(){	
-	
-	var pin = document.getElementById('login').value;
-	
-	if(pin == ""){
-		
-		alert("Please enter your pin code");
-		
-		}else{
-			
-			setupCacheAgent();
-			
-			var loadingdiv1 = document.getElementById('loading1');
-			loadingdiv1.style.visibility = "visible";
-			
-			var loadingdiv2 = document.getElementById('loading2');
-			loadingdiv2.style.visibility = "visible";
-			
-			$( "#tabs" ).tabs( "select" , 1 );	
-			
-		}
-	
-	}
-	
-
 		
 </script>
 </head>
-<body>
- 
+<body onLoad = "setupCacheAgent();">
 <div class="Bridge-demo">
+
 
 <div id="tabs" style="font-size:medium;"  >
 	<ul  >
-		<li id='li0'><a href="#tabs-0">Login</a></li>
-		
-		<li id='li1'><a href="#tabs-1">Incoming</a></li>
-		<li id='li2'><a href="#tabs-2">Operational</a></li>				
+		<li id='li0'><a href="#tabs-0"><SPAN id = "loginTab" >Login</SPAN></a></li>		
+		<li id='li1'><a href="#tabs-1"><SPAN >Incoming</SPAN></a></li>
+		<li id='li2'><a href="#tabs-2"><SPAN >Operational</SPAN></a></li>	
 	</ul>
 	
-	<div id="tabs-0">
-	Pin :
+	<div id="tabs-0">	
 		<input type="text" id="login"  size="6">
-		<input type = "button" id="btnOk"  value ="ok" onclick = "loginOkClicked();" >	
+		<input type = "button" id="btnlogin"  value ="login" onclick = "loginClick();" >	
 	</div>	
 	
 	<div id="tabs-1">
-		<div id='loading1'  align="right"><img src="Image/loading5.gif" title="Loading" /></div>
-		
+		<div id='loading1'  style= "visibility:hidden" align="right"><img src="Image/loading5.gif" title="Loading" /></div>
 		<ul id = "taskList"></ul>
 	</div>
 	
 	<div id="tabs-2">
 		<div id='loading2'  style= "visibility:hidden" align="right"><img src="Image/loading5.gif" title="Loading" /></div>
-	
-	Operational tasks: 
-		<ul id = "taskList1"></ul>
+		<ul id = "taskList1"></ul>	  
 	</div>	
 	<div id="tabs-3">
 	
