@@ -63,19 +63,18 @@ var loginClick = function() {
 
 		if (pin == "") {
 
-			alert("Please enter your pin code");
+			$("#message").html("Please enter your pin code");
 
 		} else {
 			checkAgent();//compare the login code with the existing agent cache
-
+			var loadingdiv2 = document.getElementById('loading0');
+			loadingdiv2.style.visibility = "visible";
+			
 			var loadingdiv1 = document.getElementById('loading1');
 			loadingdiv1.style.visibility = "visible";
 
 			var loadingdiv2 = document.getElementById('loading2');
-			loadingdiv2.style.visibility = "visible";
-
-			$("#tabs").tabs("select", 1);
-			$("#loginTab").html("Logout");
+			loadingdiv2.style.visibility = "visible";					
 			var pin = document.getElementById('login').value;
 
 		}
@@ -100,9 +99,10 @@ checkAgent = function() {
 		var agents = agentCache.getArray();
 		for (var i = 0; i < agents.length; i++) {
 			if (agents[i].login == login) {
+				$("#tabs").tabs("select", 1);
+				$("#loginTab").html("Logout");
 				document.getElementById('btnlogin').value = "logout";
 				uuidValue = agents[i].uuid;
-				// plans = agent[i].plan;// first time empty
 				setupCacheTask();
 			}
 		}
@@ -121,7 +121,7 @@ checkAgent = function() {
  */
 
 var setupCacheTask = function() {
-	var uuid = uuidValue; //uuidValue from agent login check function
+	var uuid = uuidValue;
 
 	if (!caches.exists("task")) {
 		console.log("Application started loading task list..")
@@ -131,7 +131,6 @@ var setupCacheTask = function() {
 		taskCache.render();
 	}
 }
-
 
 task_alert = function(oldVal,newVal){
 	if (oldVal == null && newVal != null){
@@ -355,12 +354,12 @@ postAccept = function(taskId) {
 				msg = JSON.parse(msg);
 			}
 			task_renderer(msg);
-			alert("you have accepted the task")
+			$("#message").html("you have accepted the task");
 		},
 		error : function(a, b, c) {
-			console.log("XMLHttpRequest: " + a + " textStatus: " + b
+			console.log("HttpRequest: " + a + " textStatus: " + b
 					+ "errorThrown: " + c);
-			alert("XMLHttpRequest: " + a + "<br>" + " textStatus:  " + b
+			alert("HttpRequest: " + a + "<br>" + " textStatus:  " + b
 					+ "<br>" + "errorThrown: " + c);
 		}
 	});

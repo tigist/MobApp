@@ -3,56 +3,64 @@
 <meta charset="UTF-8">
 <head>
 <title>BRIDGE Mob agent demo</title>
-<link type="text/css" href="css/smoothness/jquery-ui-1.8.23.custom.css" rel="Stylesheet" />	
-<script type="text/javascript" charset="utf-8" src="js/jquery-1.7.2.min.js"></script>
+<link type="text/css" href="css/smoothness/jquery-ui-1.8.23.custom.css"	rel="Stylesheet" />
+<script type="text/javascript" charset="utf-8"	src="js/jquery-1.7.2.min.js"></script>
 <script type="text/javascript" src="js/jquery-ui-1.8.23.custom.min.js"></script>
-<script type="text/javascript" charset="utf-8" src="js/jquery.rest.min.js"></script>
-<script type="text/javascript" charset="utf-8" src="js/jquery.json-2.3.min.js"></script>
+<script type="text/javascript" charset="utf-8"	src="js/jquery.rest.min.js"></script>
+<script type="text/javascript" charset="utf-8" 	src="js/jquery.json-2.3.min.js"></script>
 <script type="text/javascript" charset="utf-8" src="js/cordova-1.8.0.js"></script>
-<script type="text/javascript" charset="utf-8" src="js/SystemNotification.js"></script>
+<script type="text/javascript" charset="utf-8" 	src="js/SystemNotification.js"></script>
 <script type="text/javascript" charset="utf-8" src="js/renderer2.js"></script>
 <script type="text/javascript" charset="utf-8" src="js/askREST_cache.js"></script>
-	
+<script type="text/javascript" charset="utf-8" src="js/json2.js"></script>
+
 <script type="text/javascript" charset="utf-8">
-/**
- * Create html view with tabs
- */
+	/**
+	 * Create html view with tabs
+	 */
 	$(function() {
-		$( "#tabs" ).tabs();
-		
+		$("#tabs").tabs();
+
 	});
-		
 </script>
 </head>
-<body onLoad = "setupCacheAgent();">
-<div class="Bridge-demo">
+<body onLoad="setupCacheAgent();">
+	<div class="Bridge-demo">
+		<div id="tabs" style="font-size: medium;">
+			<div id = "close" align="right" ><img src="Image/close.png" title="close" align="right"  width = "20" height = "20"/></div>
+			<div id = "message" >Info</div>
+			<ul>
+				<li id='li0'><a href="#tabs-0"><SPAN id="loginTab">Login</SPAN></a></li>
+				<li id='li1'><a href="#tabs-1"><SPAN>Incoming</SPAN></a></li>
+				<li id='li2'><a href="#tabs-2"><SPAN>Operational</SPAN></a></li>
+			</ul>
+
+			<div id="tabs-0">
+			    <div id='loading0' style="visibility: hidden" align="right"></div>			
+				<input type="text" id="login" size="6"> <input type="button" id="btnlogin" value="login" onclick="loginClick();"><br>
+				<br> <span>Login code list:</span><br> <span>(2255,3366,5588,6699)</span>
 
 
-<div id="tabs" style="font-size:medium;"  >
-	<ul  >
-		<li id='li0'><a href="#tabs-0"><SPAN id = "loginTab" >Login</SPAN></a></li>		
-		<li id='li1'><a href="#tabs-1"><SPAN >Incoming</SPAN></a></li>
-		<li id='li2'><a href="#tabs-2"><SPAN >Operational</SPAN></a></li>	
-	</ul>
-	
-	<div id="tabs-0">	
-		<input type="text" id="login"  size="6">
-		<input type = "button" id="btnlogin"  value ="login" onclick = "loginClick();" >	
-	</div>	
-	
-	<div id="tabs-1">
-		<div id='loading1'  style= "visibility:hidden" align="right"><img src="Image/loading5.gif" title="Loading" /></div>
-		<ul id = "taskList"></ul>
+			</div>
+
+			<div id="tabs-1">
+				<div id='loading1' style="visibility: hidden" align="right">
+					<img src="Image/loading5.gif" title="Loading" />
+				</div>
+				<ul id="taskList"></ul>
+
+			</div>
+
+			<div id="tabs-2">
+				<div id='loading2' style="visibility: hidden" align="right">
+					<img src="Image/loading5.gif" title="Loading" />
+				</div>
+				<ul id="taskList1"></ul>
+			</div>
+		</div>
+
 	</div>
-	
-	<div id="tabs-2">
-		<div id='loading2'  style= "visibility:hidden" align="right"><img src="Image/loading5.gif" title="Loading" /></div>
-		<ul id = "taskList1"></ul>	  
-	</div>	
-	<div id="tabs-3">
-	
-	</div>
-</div>
-</div>	
+
+
 </body>
 </html>
