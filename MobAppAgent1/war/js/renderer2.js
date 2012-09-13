@@ -1,4 +1,4 @@
-
+var uuidValue = null;
 var PhoneGapAvailable = false;
 var agentCache = null;
 var taskCache = null;
@@ -6,6 +6,20 @@ var geocoder = null;
 
 $(document).ready(function (){
 	if (typeof(google) != "undefined") geocoder = new google.maps.Geocoder();
+	if (typeof(localStorage["Bridge_login"]) != "undefined" && localStorage["Bridge_login"] != null){
+		setupCacheAgent();
+		uuidValue=localStorage["Bridge_login"];
+		setupCacheTask();
+
+		if ($("#taskList1 .taskListItem").length == 0){
+			$("#tabs").tabs("select", 1);	
+		} else {
+			$("#tabs").tabs("select", 2);			
+		}
+		$("#loginTab").html("Logout");
+		document.getElementById('btnlogin').value = "logout";
+		document.getElementById('login').value=agentCache.getElement(uuidValue).login;
+	}
 });
 document.addEventListener('deviceready', onDeviceReady, false);
 
@@ -14,7 +28,7 @@ document.addEventListener('deviceready', onDeviceReady, false);
  * fully loaded, callback function
  */
 
-function notification() {
+function notification(source) {
 	console.log("Beeping!");
 	if (PhoneGapAvailable) {
 		window.plugins.PaigeSystemNotification.beep(1);
@@ -24,6 +38,13 @@ function notification() {
 			console.log("Couldn't get app to front:",e);
 		}
 	}
+	//Navigate to source page
+	if (source == "incoming"){
+		$("#tabs").tabs("select", 1);	
+	} else if (source == "operational"){
+		$("#tabs").tabs("select", 2);
+	};
+	
 }
 
 /**
@@ -108,11 +129,16 @@ checkAgent = function() {
 		var agents = agentCache.getArray();
 		for (var i = 0; i < agents.length; i++) {
 			if (agents[i].login == login) {
-				$("#tabs").tabs("select", 1);
 				$("#loginTab").html("Logout");
 				document.getElementById('btnlogin').value = "logout";
 				uuidValue = agents[i].uuid;
+				localStorage["Bridge_login"]=uuidValue;
 				setupCacheTask();
+				if ($("#taskList1 .taskListItem").length == 0){
+					$("#tabs").tabs("select", 1);	
+				} else {
+					$("#tabs").tabs("select", 2);			
+				}
 			}
 		}
 	}
@@ -143,7 +169,11 @@ var setupCacheTask = function() {
 
 task_alert = function(oldVal,newVal){
 	if (oldVal == null && newVal != null){
-		notification();
+		if (newVal.data.state == "operational"){
+			notification("operational");
+		} else {
+			notification("incoming");			
+		}
 	}
 }
 
@@ -184,7 +214,7 @@ plan_renderer = function(oldVal,newVal) {
 		if (oldVal == null || oldVal.data.plan != newVal.data.plan){
 			console.log("plan changed");
 			setTimeout(function(){taskCache.render();},100);
-			notification();
+			notification("operational");
 		}
 	}
 		
