@@ -18,5 +18,6 @@ PhoneGap.addConstructor(function () {
     if (typeof(window.plugins.webView) == "undefined") {
     	console.log('registering webViewPG()');
     	PhoneGap.addPlugin('webView', new WebViewPG());
+    	window.plugins.webView.touch();
     }
 });

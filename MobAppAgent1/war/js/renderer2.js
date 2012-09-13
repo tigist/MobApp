@@ -1,11 +1,20 @@
+
+var PhoneGapAvailable = false;
+var agentCache = null;
+var taskCache = null;
+document.addEventListener('deviceready', onDeviceReady, false);
+
 /**
  * notification method consists deviceready event that fires when PhoneGap is
  * fully loaded, callback function
  */
 
 function notification() {
-	document.addEventListener('deviceready', onDeviceReady, false);
-	alert("there is an update  notification");
+	console.log("Beeping!");
+	if (PhoneGapAvailable) {
+		window.plugins.PaigeSystemNotification.beep(1);
+		//window.plugins.webView.sendAppToFront();
+	}
 }
 
 /**
@@ -15,9 +24,9 @@ function notification() {
 function onDeviceReady() {
 	console.log("device is ready");
 	if (typeof window.plugins.PaigeSystemNotification != "undefined") {
+		PhoneGapAvailable = true;
 		window.plugins.PaigeSystemNotification.createStatusBarNotification(
 				"Title", "Notification", "Alert");
-		window.plugins.webView.sendAppToFront();
 	}
 }
 /**
@@ -27,23 +36,15 @@ function onDeviceReady() {
  * from list of agents. 
  */
 var setupCacheAgent = function() {
-
-	if (!caches.exists("agent")) {
-		console.log("Init Cache agent");
-		cache = new ASKCache("agent", "agent/", null, "uuid", session, true); // cache for agents
-		cache.addRenderer("all", agent_renderer);
-		cache.onChangeCBs[cache.onChangeCBs.length] = function(a, b) {
-			console.log(a, b);
-			if (a !== null && b !== null
-					&& (JSON.stringify(a) !== JSON.stringify(b))) {
-				if (a.data.uuid == uuidValue && b.data.uuid == uuidValue) {
-					cache.addRenderer('all', plan_renderer); //delete existing user display and reload the task with plan information
-					notification();
-				}
-			}
-
+	if (agentCache == null){
+		if (!caches.exists("agent")) {
+			console.log("Init Cache agent");
+			agentCache = new ASKCache("agent", "agent/", null, "uuid", session, false); // cache for agents, Global!
+			agentCache.addCB(plan_renderer);
+		} else {
+			agentCache = caches.getList("agent")[0];
+			agentCache.restart();
 		}
-
 	}
 }
 
@@ -93,39 +94,19 @@ var cleanPage = function() {
 	localStorage.clear();
 }
 
-/**
- * agent_renderer take json data of agents from cache, if Json data is not
- * empty, it takes user login value from user interface. Looping through the
- * agent login code to extract the corresponding uuid of that particular agent.
- * The uuid will be used to trigger task detail though setupCacheTask callback
- * method
- * 
- */
-
-agent_renderer = function(json, oldData, cache) {
-	if (json && json != "") {
-		console.log(" list of gents! ");
-		console.log(JSON.stringify(json));
-		agent = json;
-	}
-}
-
-checkAgent = function(json, lodData, cache) {
-
-	var i = 0;
+checkAgent = function() {
 	if (document.getElementById('login').value != null) {
-		login = document.getElementById('login').value
-		for (i = 0; i < agent.length; i++) {
-			if (agent[i].login == login) {
+		login = document.getElementById('login').value;
+		var agents = agentCache.getArray();
+		for (var i = 0; i < agents.length; i++) {
+			if (agents[i].login == login) {
 				document.getElementById('btnlogin').value = "logout";
-				uuidValue = agent[i].uuid;
+				uuidValue = agents[i].uuid;
 				// plans = agent[i].plan;// first time empty
 				setupCacheTask();
 			}
 		}
-
 	}
-
 }
 
 
@@ -142,20 +123,19 @@ checkAgent = function(json, lodData, cache) {
 var setupCacheTask = function() {
 	var uuid = uuidValue; //uuidValue from agent login check function
 
-	if (!caches.exists("label")) {
+	if (!caches.exists("task")) {
 		console.log("Application started loading task list..")
-		console.log("Init Cache label");
-		cache = new ASKCache("label", "agent/" + uuid + "/tasks", null, "id",session, false);// for task
-		cache.addRenderer('all', task_renderer);
-		cache.onChangeCBs[cache.onChangeCBs.length] = function(a, b) {
-			console.log(a, b);
-			if (b != null && (a.data.state !== b.data.state)) {
-				console.log("'" + a.data.state + "' and '" + b.data.state + "'");
-				alert("'" + a.data.state + "' and '" + b.data.state + "'");
-			}
-		};
-		cache.render();
+		taskCache = new ASKCache("task", "agent/" + uuid + "/tasks", null, "id",session, false);// for task
+		taskCache.addRenderer('all', task_renderer);
+		taskCache.addCB(task_alert);
+		taskCache.render();
+	}
+}
 
+
+task_alert = function(oldVal,newVal){
+	if (oldVal == null && newVal != null){
+		notification();
 	}
 }
 
@@ -165,21 +145,10 @@ var setupCacheTask = function() {
  * and button through callback method newTAskcontainer.
  */
 task_renderer = function(json, olddata, cache) {
-	if (json && json != "") {
-		console.log(" Task json data! ");
-		console.log(JSON.stringify(json));
-
-		task = json;
-		console.log("json data lengeth = " + task.length);
-		i = 0
-		while (document.getElementById(i)) {
-			i++;
-		}
-		if (task.length > i) // check if all tasks are displayed on user interface
-		{
-			newTaskContainer(i, task, agent);
-
-		}
+	if (json && typeof(uuidValue) != "undefined") {
+		tasks = json;
+		newTaskContainer(tasks);
+		
 		/**
 		 * once task detail displayed on the screen hide the loading status
 		 */ 
@@ -187,37 +156,35 @@ task_renderer = function(json, olddata, cache) {
 		loadingdiv1.style.visibility = "hidden";
 		var loadingdiv2 = document.getElementById('loading2');
 		loadingdiv2.style.visibility = "hidden";
-
+		if($('#taskList li').length== 0){
+			$('#taskList').html("<span class='noTasks'>No tasks to display!</span>");
+		} else {
+			$('#taskList .noTasks').hide();
+		};
+		if($('#taskList1 li').length== 0){
+			$('#taskList1').html("<span class='noTasks'>No tasks to display!</span>");
+		} else {
+			$('#taskList1 .noTasks').hide();
+		};
+		$( "#tabs" ).tabs();
 	}
 }
 
-plan_renderer = function(json, olddata, cache) {
-	if (json && json != "") {
-		console.log(" Task json data from Plan_renderer ");
-		console.log(JSON.stringify(json));
-
-		var task = json;
-		console.log("json data from  plan_renderer = " + task.length);
-
-		tabs2 = document.getElementById('taskList');
-		if (tabs2!=null) {  //childNodes.length>0 
-			deleteTaskContainer();
+plan_renderer = function(oldVal,newVal) {
+	if (newVal != null){
+		if (typeof(uuidValue) == "undefined" || newVal.id != uuidValue) return;
+		if (oldVal == null || oldVal.data.plan != newVal.data.plan){
+			console.log("plan changed");
+			setTimeout(taskCache.render,100);
+			notification();
 		}
-
-		newTaskContainer(i, task, agent);
-
 	}
-
+		
 	var loadingdiv1 = document.getElementById('loading1');
 	loadingdiv1.style.visibility = "hidden";
 	var loadingdiv2 = document.getElementById('loading2');
 	loadingdiv2.style.visibility = "hidden";
 
-}
-
-deleteTaskContainer = function() {
-	oldLi = document.getElementById('0');
-	tabs2.removeChild(oldLi);
 }
 
 /**
@@ -226,41 +193,48 @@ deleteTaskContainer = function() {
  * Task index i is used to retrieve each task and in html element. J is an index
  * used to retrieve sub detail of a task.
  */
-newTaskContainer = function(i, task, agent) {
-	taskState = task[i].state;
-
-	if (taskState == 'pending') {
-
+newTaskContainer = function(tasks) {
+	$("#taskList, #taskList1").empty();
+	for (var i=0; i<tasks.length; i++){
+		taskState = tasks[i].state;
 		var resourceList = "";
-		agentState = "";
-		agentStateOf = "";
-		for ( var j = 0; j < task[i].resources.length; j++) {
-			var type = task[i].resources[j].type;
+		var myState = "";
+		var agentStateOf = "";
+		var skipPlan=true;
+		var agentPlan = agentCache.getElement(uuidValue).plan;
+		for ( var j = 0; j < tasks[i].resources.length; j++) {
+			var type = tasks[i].resources[j].type;
 			if (type == "human") {
-				resourceList += "person: " + task[i].resources[j].details.role + '<br>';//loop in resources
-				agentUuid = task[i].resources[j].id;
-				if (agentUuid == uuidValue) {
-					agentStateOf = task[i].resources[j].details.state;
+				agentStateOf = tasks[i].resources[j].details.state;
+				if (tasks[i].state == "operational"){
+					if (agentStateOf == "accepted"){
+						resourceList += "person: " + tasks[i].resources[j].details.name + '<br>';//loop in resources
+					}
+				} else {
+					if (tasks[i].resources[j].id == uuidValue){
+						myState=agentStateOf;
+					}
+					resourceList += "person: " + tasks[i].resources[j].details.name + " ("+agentStateOf+")<br>";//loop in resources
+					
 				}
 			} else if (type == "car") {
 				resourceList += "CarType: "
-						+ task[i].resources[j].details.carType + '<br>';
+						+ tasks[i].resources[j].details.carType + '<br>';
 			}
 		}
-		var newTaskDetail = "Task : " + task[i].description + '<br>'
-				+ "location:  (" + task[i].lat + ' , ' + task[i].lon + ' )<br>'
+		if (tasks[i].state == "operational" && $("#taskList1 li").length == 0){
+			skipPlan=false;
+		}
+		var newTaskDetail = "Task : " + tasks[i].description + '<br>'
+				+ "location:  (" + tasks[i].lat + ' , ' + tasks[i].lon + ' )<br>'
+				+ (skipPlan || agentPlan==""?"":"plan: "+agentPlan+"<br>")
 				+ "resources: " + '<br>' + resourceList + "state: "
-				+ task[i].state + '<br>';
-
-		console.log("pending task detail = " + newTaskDetail);
+				+ tasks[i].state + '<br>';
 
 		/**
 		 * new html list element created with id and value as i to contain task detail in Incoming tab
 		 */ 	
-		var myli = document.createElement('li');
-		myli.id = i;
-		myli.value = i;
-		myli.innerHTML = newTaskDetail;
+		var myLi = $("<li>").attr("id",i).val(i).addClass("taskItem").html(newTaskDetail);
 
 		/**
 		 * new accept button created and appended to the corresponding list html element
@@ -271,14 +245,15 @@ newTaskContainer = function(i, task, agent) {
 		accept.name = "accept";
 		accept.value = "Accept"
 		accept.title = "Accept";
-		accept.onclick = function() {
-			postAccept(i, task); // accept i-th task and post acceptance to the server
-			change(i, task); // disable button in i-th task
-		};
-		if (agentStateOf == 'accepted') {
+		accept.onclick = function(i) {
+			return function(){
+				postAccept(tasks[i].id); // accept i-th task and post acceptance to the server
+				change(i); // disable button in i-th task
+			}
+		}(i);
+		if (myState == 'accepted') {
 			accept.disabled = true;
 			accept.title = "you have already accepted this task";
-
 		}
 		/**
 		 * new reject button created and appended to the corresponding list html element
@@ -291,55 +266,6 @@ newTaskContainer = function(i, task, agent) {
 		reject.value = "Reject";
 		reject.title = "Reject";
 		reject.disabled = true;
-
-		/**
-		 * attache the button to the current html list element in the same execution
-		 */ 
-		myli.appendChild(accept);
-		myli.appendChild(reject);
-
-		var taskList = document.getElementById('taskList');
-		taskList.appendChild(myli);
-
-	} else if (taskState == 'operational') {
-
-		var resourceList = "";
-		var agentPlan = "";
-		for ( var j = 0; j < task[i].resources.length; j++) {
-			var type = task[i].resources[j].type;
-			if (type == "human") {
-				resourceList += "person " + task[i].resources[j].details.role
-						+ '<br>';
-				agentUuid = task[i].resources[j].id;
-				if (agentUuid == uuidValue) {
-					for ( var n = 0; n < agent.length; n++) {
-						if (agent[n].uuid == uuidValue) {
-							agentPlan = agent[n].plan;
-							alert("agent plan is  '  " + agentPlan + "    '  ");
-						}
-					}
-				}
-			} else if (type == "car") {
-				resourceList += "Car type "
-						+ task[i].resources[j].details.carType + '<br>';
-			}
-		}
-		var operationalTask = "Task " + task[i].description + " at " + "<br>"
-				+ "location:  (" + task[i].lat + ' , ' + task[i].lon + ' )<br>'
-				+ "plan: " + agentPlan + "<br>" +
-
-				"resources: " + '<br>' + resourceList + '<br>' + "state: "
-				+ task[i].state + '<br>'
-
-		console.log("operational task detail =  " + operationalTask);
-
-		/** new html list element created with id and value name called as i to
-		 * contain in operational tab task detail
-		 */
-		var myli = document.createElement('li');
-		myli.id = i;
-		myli.value = i;
-		myli.innerHTML = operationalTask;
 
 		/**
 		 *  new started button created and appended to the corresponding html li element
@@ -366,20 +292,29 @@ newTaskContainer = function(i, task, agent) {
 		withdraw.title = "withdraw";
 		withdraw.disabled = true;
 
-		myli.appendChild(start);
-		myli.appendChild(withdraw);
-		var taskList = document.getElementById('taskList1');
-		taskList.appendChild(myli);
+		
+		/**
+		 * attache the button to the current html list element in the same execution
+		 */ 
+		if (taskState == 'pending') {
+			myLi.append($(accept));
+			myLi.append($(reject));
+			$("#taskList").append(myLi);
+		} else {
+			myLi.append($(start));
+			myLi.append($(withdraw));
+			$("#taskList1").append(myLi);
+		}
 	}
-
 }
+
 
 /**
  * change function used to detect the value of dynamically created button for
  * particular task and disable it. And detect the reject button and change it to
  * withdraw title. Yet the functionality of reject and withdraw is not defined
  */
-var change = function(i, task) {
+var change = function(i) {
 	var val = 'btnAccept' + i;
 	var valString = val.toString();
 	var accept = document.getElementById(valString);
@@ -404,12 +339,8 @@ var change = function(i, task) {
  * agent state and optionally task state.
  */
 
-postAccept = function(i, task) {
-	var j = document.getElementById('login').value;
+postAccept = function(taskId) {
 	var agentId = uuidValue;
-	taskId = task[i].id;
-	console.log("agentId is = " + agentId);
-	console.log("task id extracted is = " + taskId);
 	var url = "http://memo-app-services.appspot.com/agent/" + agentId
 			+ "/tasks/" + taskId + "/accept";
 	$.ajax({
@@ -420,6 +351,10 @@ postAccept = function(i, task) {
 		contentType : "application/json; charset=utf-8",
 		url : url,
 		success : function(msg) {
+			if (typeof(msg) == "string"){
+				msg = JSON.parse(msg);
+			}
+			task_renderer(msg);
 			alert("you have accepted the task")
 		},
 		error : function(a, b, c) {
