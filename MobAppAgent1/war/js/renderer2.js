@@ -2,6 +2,11 @@
 var PhoneGapAvailable = false;
 var agentCache = null;
 var taskCache = null;
+var geocoder = null;
+
+$(document).ready(function (){
+	if (typeof(google) != "undefined") geocoder = new google.maps.Geocoder();
+});
 document.addEventListener('deviceready', onDeviceReady, false);
 
 /**
@@ -13,7 +18,11 @@ function notification() {
 	console.log("Beeping!");
 	if (PhoneGapAvailable) {
 		window.plugins.PaigeSystemNotification.beep(1);
-		//window.plugins.webView.sendAppToFront();
+		try {
+			window.plugins.webView.sendAppToFront();
+		} catch(e){
+			console.log("Couldn't get app to front:",e);
+		}
 	}
 }
 
@@ -155,12 +164,12 @@ task_renderer = function(json, olddata, cache) {
 		loadingdiv1.style.visibility = "hidden";
 		var loadingdiv2 = document.getElementById('loading2');
 		loadingdiv2.style.visibility = "hidden";
-		if($('#taskList li').length== 0){
+		if($('#taskList .taskListItem').length== 0){
 			$('#taskList').html("<span class='noTasks'>No tasks to display!</span>");
 		} else {
 			$('#taskList .noTasks').hide();
 		};
-		if($('#taskList1 li').length== 0){
+		if($('#taskList1 .taskListItem').length== 0){
 			$('#taskList1').html("<span class='noTasks'>No tasks to display!</span>");
 		} else {
 			$('#taskList1 .noTasks').hide();
@@ -174,7 +183,7 @@ plan_renderer = function(oldVal,newVal) {
 		if (typeof(uuidValue) == "undefined" || newVal.id != uuidValue) return;
 		if (oldVal == null || oldVal.data.plan != newVal.data.plan){
 			console.log("plan changed");
-			setTimeout(taskCache.render,100);
+			setTimeout(function(){taskCache.render();},100);
 			notification();
 		}
 	}
@@ -196,44 +205,64 @@ newTaskContainer = function(tasks) {
 	$("#taskList, #taskList1").empty();
 	for (var i=0; i<tasks.length; i++){
 		taskState = tasks[i].state;
-		var resourceList = "";
+		var resourceList = "<ul>";
 		var myState = "";
 		var agentStateOf = "";
 		var skipPlan=true;
 		var agentPlan = agentCache.getElement(uuidValue).plan;
+		var agentPlanLoc = null;
+		var toLocation = agentCache.getElement(uuidValue).toLocation;
+		if (toLocation != ""){
+			agentPlanLoc = {"lat":toLocation.split(" ")[0],"lon":toLocation.split(" ")[1]};	
+		}
 		for ( var j = 0; j < tasks[i].resources.length; j++) {
 			var type = tasks[i].resources[j].type;
 			if (type == "human") {
 				agentStateOf = tasks[i].resources[j].details.state;
 				if (tasks[i].state == "operational"){
 					if (agentStateOf == "accepted"){
-						resourceList += "person: " + tasks[i].resources[j].details.name + '<br>';//loop in resources
+						resourceList += "<li>" + tasks[i].resources[j].details.name + '</li>';//loop in resources
 					}
 				} else {
 					if (tasks[i].resources[j].id == uuidValue){
 						myState=agentStateOf;
 					}
-					resourceList += "person: " + tasks[i].resources[j].details.name + " ("+agentStateOf+")<br>";//loop in resources
+					resourceList += "<li>" + tasks[i].resources[j].details.name + " ("+agentStateOf+")</li>";//loop in resources
 					
 				}
 			} else if (type == "car") {
-				resourceList += "CarType: "
-						+ tasks[i].resources[j].details.carType + '<br>';
+				resourceList += "<li>Vehicle: "
+						+ tasks[i].resources[j].details.name + '</li>';
 			}
 		}
-		if (tasks[i].state == "operational" && $("#taskList1 li").length == 0){
+		resourceList +="</ul>";
+		if (tasks[i].state == "operational" && $("#taskList1 .taskListItem").length == 0){
 			skipPlan=false;
 		}
-		var newTaskDetail = "Task : " + tasks[i].description + '<br>'
-				+ "location:  (" + tasks[i].lat + ' , ' + tasks[i].lon + ' )<br>'
-				+ (skipPlan || agentPlan==""?"":"plan: "+agentPlan+"<br>")
-				+ "resources: " + '<br>' + resourceList + "state: "
-				+ tasks[i].state + '<br>';
-
-		/**
-		 * new html list element created with id and value as i to contain task detail in Incoming tab
-		 */ 	
-		var myLi = $("<li>").attr("id",i).val(i).addClass("taskItem").html(newTaskDetail);
+		
+		if (geocoder != null){
+			var latLon = new google.maps.LatLng(tasks[i].lat,tasks[i].lon);
+			geocoder.geocode({location:latLon}, function(i){
+				return function(results,status){
+				if (status == google.maps.GeocoderStatus.OK) {
+					$('.loc_'+i).html(results[0].formatted_address);
+				}
+			}}(i));
+			if (agentPlanLoc != null){
+				latLon = new google.maps.LatLng(agentPlanLoc.lat,agentPlanLoc.lon);
+				geocoder.geocode({location:latLon}, function(i){
+					return function(results,status){
+					if (status == google.maps.GeocoderStatus.OK) {
+						$('.planLoc_'+i).html(results[0].formatted_address);
+					}
+				}}(i));				
+			}
+		}
+		var newTaskDetail = (skipPlan || agentPlan==""?"":"Plan: <b>"+agentPlan+"</b><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class='planLoc_"+i+"'>("+agentPlanLoc+")</span>)<hr>")+ 
+				"Description:<br>" 
+				+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+tasks[i].description + '<br>'
+				+ "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class='loc_"+i+"'>" + tasks[i].lat.substring(0,6) + ' , ' + tasks[i].lon.substring(0,5) + '</span>)<br>'
+				+ "Team: " + '<br>' + resourceList+"<br><hr>";
 
 		/**
 		 * new accept button created and appended to the corresponding list html element
@@ -296,13 +325,17 @@ newTaskContainer = function(tasks) {
 		 * attache the button to the current html list element in the same execution
 		 */ 
 		if (taskState == 'pending') {
-			myLi.append($(accept));
-			myLi.append($(reject));
-			$("#taskList").append(myLi);
+			$("<div class='taskListItem'>")
+				.html(newTaskDetail)
+				.append($(accept))
+				.append($(reject))
+			.appendTo($("#taskList"));
 		} else {
-			myLi.append($(start));
-			myLi.append($(withdraw));
-			$("#taskList1").append(myLi);
+			$("<div class='taskListItem'>")
+				.html(newTaskDetail)	
+				.append($(start))
+				.append($(withdraw))
+			.appendTo($("#taskList1"));
 		}
 	}
 }
