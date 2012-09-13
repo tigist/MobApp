@@ -1,4 +1,4 @@
-package com.almende.mobapp1;
+package com.mobapp2;
 
 import org.apache.cordova.DroidGap;
 
