@@ -1,5 +1,5 @@
 session = {
-		 appServices:"http://memo-app-services.appspot.com/", // agent/ added
+		  appServices:"http://memo-app-services.appspot.com/", // agent/ added
 	      sessionKey:"fooBar",
 	      isSession:function(){return true},
 	      addCallback:function(){},
@@ -332,7 +332,16 @@ ASKCache.prototype.sync =	function(){
 			console.log("["+cache.label+"]("+id+"): Warning: server side error: "+ jsonTxt);
 			return;
 		}
-		if (localStorage[cache.label+"_changes"]!="true"){
+		var doStore=true;
+		if (localStorage[cache.label+"_changes"]=="true"){
+			var arr = cache.getList();
+			if (!arr) arr={};
+			if (arr[id].state != "normal"){
+				console.log("["+cache.label+"]("+id+"): Warning: local changes detected, dropping server data");
+				doStore=false;				
+			}
+		}
+		if (doStore){
 			try {
 				var json=JSON.parse(jsonTxt);
 				var arr = cache.getList();
@@ -343,8 +352,6 @@ ASKCache.prototype.sync =	function(){
 			} catch (e){
 				console.log("["+cache.label+"]("+id+"): Error: failed to parse server data: '"+jsonTxt+"' "+e);
 			}
-		} else {
-			console.log("["+cache.label+"]("+id+"): Warning: local changes detected, dropping server data");
 		}		
 	}
 	//get outstanding changes from localStorage
@@ -364,7 +371,7 @@ ASKCache.prototype.sync =	function(){
 					console.log("["+cache.label+"]:Successfull serverside change:"+item.id);
 					cache.applied(item.id);
 					cache.outstanding_request=false;
-					cache.sync();
+					cache.sync();//TODO: race cond too many syncs
 				},
 				403:function(res){
 					cache.outstanding_request=false;
@@ -414,12 +421,14 @@ ASKCache.prototype.sync =	function(){
 					var idList=JSON.parse(res.responseText);
 					if (idList && idList.length){
 						var len=idList.length;
+						var resultCount = 0;
 						for (var i=0; i<len; i++){
 							var id=idList[i];
 							var callback_wrapper = function(local_id){
 								return function callback(res){
 									store_element(local_id,res.responseText);
-									cache.render();
+									resultCount++;
+									if (resultCount >= len) cache.render();
 								}
 							}
 							$.Read(cache.url+id,cache.data,{
@@ -432,6 +441,7 @@ ASKCache.prototype.sync =	function(){
 								200:callback_wrapper(id),
 								403:function callback(res){
 									forbidden();
+									resultCount++;
 								},
 								complete:function(res){
 										if (res.readyState == 0 && res.status==0){
@@ -450,6 +460,7 @@ ASKCache.prototype.sync =	function(){
 					}
 				} else {
 					store(res.responseText);
+					cache.render();
 				}
 			},
 			403:function(res){
@@ -462,7 +473,6 @@ ASKCache.prototype.sync =	function(){
 			}
 		});
 	}
-	cache.render();
 };
 
 

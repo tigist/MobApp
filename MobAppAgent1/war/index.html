@@ -13,14 +13,29 @@
 <script type="text/javascript" charset="utf-8" src="js/renderer2.js"></script>
 <script type="text/javascript" charset="utf-8" src="js/askREST_cache.js"></script>
 <script type="text/javascript" charset="utf-8" src="js/json2.js"></script>
+<script type="text/javascript"
+	src="http://maps.googleapis.com/maps/api/js?key=AIzaSyBAI8vyV2UkwGag1r7lJHn6hlzDTDAOads&sensor=false">
+</script>
+
+<style type="text/css">
+.taskListItem {
+	border:1px solid black;
+	display:block;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	padding:2px;
+}
+</style>
+
 
 <script type="text/javascript" charset="utf-8">
 	/**
 	 * Create html view with tabs
 	 */
-	$(function() {
-		$("#tabs").tabs();
 
+	$(document).ready(function() {
+		$("#tabs").tabs();
 	});
 </script>
 </head>
