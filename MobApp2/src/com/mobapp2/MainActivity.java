@@ -29,7 +29,7 @@ public class MainActivity extends DroidGap{
 	    super.setIntegerProperty("loadUrlTimeoutValue", 60000); 
 		super.onCreate(savedInstanceState);
 		super.clearCache();	
-		super.loadUrl("http://brigde-demo-app-agent.appspot.com/");
+		super.loadUrl("http://bridge-demo-mob-agent.appspot.com/"); 
 	 }
 	//Override back button to act like home button
 	
