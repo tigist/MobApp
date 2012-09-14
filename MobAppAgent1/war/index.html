@@ -2,7 +2,7 @@
 <html>
 <meta charset="UTF-8">
 <head>
-<title>BRIDGE Mob agent demo</title>
+<title>Bridge demo mob agent</title>
 <link type="text/css" href="css/smoothness/jquery-ui-1.8.23.custom.css"	rel="Stylesheet" />
 <script type="text/javascript" charset="utf-8"	src="js/jquery-1.7.2.min.js"></script>
 <script type="text/javascript" src="js/jquery-ui-1.8.23.custom.min.js"></script>
@@ -10,21 +10,29 @@
 <script type="text/javascript" charset="utf-8" 	src="js/jquery.json-2.3.min.js"></script>
 <script type="text/javascript" charset="utf-8" src="js/cordova-1.8.0.js"></script>
 <script type="text/javascript" charset="utf-8" 	src="js/SystemNotification.js"></script>
+<script type="text/javascript" charset="utf-8" 	src="js/WebView.js"></script>
 <script type="text/javascript" charset="utf-8" src="js/renderer2.js"></script>
 <script type="text/javascript" charset="utf-8" src="js/askREST_cache.js"></script>
 <script type="text/javascript" charset="utf-8" src="js/json2.js"></script>
-<script type="text/javascript"
-	src="http://maps.googleapis.com/maps/api/js?key=AIzaSyBAI8vyV2UkwGag1r7lJHn6hlzDTDAOads&sensor=false">
+<script type="text/javascript"	src="http://maps.googleapis.com/maps/api/js?key=AIzaSyBAI8vyV2UkwGag1r7lJHn6hlzDTDAOads&sensor=false">
 </script>
 
 <style type="text/css">
 .taskListItem {
 	border:1px solid black;
 	display:block;
-	-webkit-border-radius: 5px;
+	-webkit-border-radius: 1px;
 	-moz-border-radius: 5px;
 	border-radius: 5px;
 	padding:2px;
+	
+}
+
+.closeImg{
+	align:right;
+	width:20px ;
+	height:20px;
+	title:close;
 }
 </style>
 
@@ -42,7 +50,7 @@
 <body onLoad="setupCacheAgent();">
 	<div class="Bridge-demo">
 		<div id="tabs" style="font-size: medium;">
-			<div id = "close" align="right" ><img src="Image/close.png" title="close" align="right"  width = "20" height = "20"/></div>
+			<div id = "close" align="right" onclick="cleanInfo();" ><img src="Image/close.png" class="closeImg"/></div>
 			<div id = "message" >Info</div>
 			<ul>
 				<li id='li0'><a href="#tabs-0"><SPAN id="loginTab">Login</SPAN></a></li>
@@ -51,7 +59,6 @@
 			</ul>
 
 			<div id="tabs-0">
-			    <div id='loading0' style="visibility: hidden" align="right"></div>			
 				<input type="text" id="login" size="6"> <input type="button" id="btnlogin" value="login" onclick="loginClick();"><br>
 				<br> <span>Login code list:</span><br> <span>(2255,3366,5588,6699)</span>
 
