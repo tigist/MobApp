@@ -21,10 +21,10 @@
 .taskListItem {
 	border:1px solid black;
 	display:block;
-	-webkit-border-radius: 1px;
+	-webkit-border-radius: 5px;
 	-moz-border-radius: 5px;
 	border-radius: 5px;
-	padding:2px;
+	padding:5px;
 	
 }
 
@@ -32,7 +32,6 @@
 	align:right;
 	width:20px ;
 	height:20px;
-	title:close;
 }
 </style>
 
@@ -50,8 +49,10 @@
 <body onLoad="setupCacheAgent();">
 	<div class="Bridge-demo">
 		<div id="tabs" style="font-size: medium;">
-			<div id = "close" align="right" onclick="cleanInfo();" ><img src="Image/close.png" class="closeImg"/></div>
-			<div id = "message" >Info</div>
+			<div id="close" align="right">
+				<img src="Image/close.png" class="closeImg" title="close" onclick="closeApp();" />
+			</div>
+			<div id="message"></div>
 			<ul>
 				<li id='li0'><a href="#tabs-0"><SPAN id="loginTab">Login</SPAN></a></li>
 				<li id='li1'><a href="#tabs-1"><SPAN>Incoming</SPAN></a></li>
@@ -59,7 +60,8 @@
 			</ul>
 
 			<div id="tabs-0">
-				<input type="text" id="login" size="6"> <input type="button" id="btnlogin" value="login" onclick="loginClick();"><br>
+				<input type="text" id="login" size="6"> <input type="button"
+					id="btnlogin" value="login" onclick="loginClick();"><br>
 				<br> <span>Login code list:</span><br> <span>(2255,3366,5588,6699)</span>
 
 
@@ -69,7 +71,7 @@
 				<div id='loading1' style="visibility: hidden" align="right">
 					<img src="Image/loading5.gif" title="Loading" />
 				</div>
-				<ul id="taskList"></ul>
+				<div id="taskList"></div>
 
 			</div>
 
@@ -77,7 +79,7 @@
 				<div id='loading2' style="visibility: hidden" align="right">
 					<img src="Image/loading5.gif" title="Loading" />
 				</div>
-				<ul id="taskList1"></ul>
+				<div id="taskList1"></div>
 			</div>
 		</div>
 

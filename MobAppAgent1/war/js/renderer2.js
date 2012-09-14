@@ -64,6 +64,19 @@ function onDeviceReady() {
 				"Title", "Notification", "Alert");
 	}
 }
+
+function closeApp() {
+    console.log("app close 1");
+
+    if(PhoneGapAvailable){
+        console.log("app close 2");
+
+    navigator.app.exitApp();  
+    console.log("app close 3");
+    }
+    
+}
+
 /**
  * setupCacheAgent is a callback method to createcache for agents. It create a
  * cache containes list of all agent detail. The cache renedere is created only
@@ -128,17 +141,20 @@ var cleanPage = function() {
 	localStorage.clear();
 }
 
+incorrectLogin = 0;
 checkAgent = function() {
 	if (document.getElementById('login').value != null) {
 		login = document.getElementById('login').value;
 		var agents = agentCache.getArray();
 		for ( var i = 0; i < agents.length; i++) {
-			if (agents[i].login == login) {
+			if (agents[i].login == login) {				
 				$("#loginTab").html("Logout");
+				$("#message").empty();
 				document.getElementById('btnlogin').value = "logout";
 				uuidValue = agents[i].uuid;
 				localStorage["Bridge_login"] = uuidValue;
 				setupCacheTask();
+				incorrectLogin = 1;
 				if ($("#taskList1 .taskListItem").length == 0) {
 					$("#tabs").tabs("select", 1);
 				} else {
@@ -146,9 +162,15 @@ checkAgent = function() {
 				}
 			}
 		}
+		invalidLogin();
 	}
 }
 
+var invalidLogin = function(){
+	if(incorrectLogin==0){
+		$("#message").html("login incorrect");
+	}
+}
 /**
  * setupCacheTask is a callback method to create task cache for particular user.
  * It create new cache for current user using ASKcache. ASKCache keep on
@@ -180,6 +202,7 @@ task_alert = function(oldVal, newVal) {
 			notification("incoming");
 		}
 	}
+	$("#message").empty();
 }
 
 /**
