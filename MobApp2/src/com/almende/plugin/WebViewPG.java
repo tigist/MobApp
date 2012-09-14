@@ -54,9 +54,13 @@ public class WebViewPG extends Plugin {
 	   
 	   public void onBackPressed(){
 		   	  Log.d("CDA", "onBackPressed Called");
-		      Intent setIntent = new Intent(Intent.ACTION_MAIN);
-		      setIntent.addCategory(Intent.CATEGORY_HOME);
-		      setIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		      Intent setIntent = new Intent(Intent.ACTION_VIEW);
+		      //setIntent.addCategory(Intent.CATEGORY_HOME);
+		      setIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+		      setIntent.addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+		      setIntent.addFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
+		      setIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		      setIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		      ctx.startActivity(setIntent);
 	  }  
 
