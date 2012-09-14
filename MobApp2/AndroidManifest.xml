@@ -1,11 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.mobapp2"
-    android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionCode="2"
+    android:versionName="2.0" >
 
     <uses-sdk
-        android:minSdkVersion="16"
-        android:targetSdkVersion="15" />
+        android:minSdkVersion="12"
+        android:targetSdkVersion="15" android:maxSdkVersion="16"/>
 
    <supports-screens 
     android:largeScreens="true" 
@@ -35,6 +35,7 @@
  
         <activity
             android:name=".MainActivity"
+            android:launchMode="singleTop"
             android:label="@string/title_activity_main"             
             android:configChanges="orientation|keyboardHidden|screenSize">
             
@@ -45,6 +46,10 @@
             <intent-filter>
                 <action android:name="com.mobapp2.MainActivity" />
                 <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             
         </activity>
